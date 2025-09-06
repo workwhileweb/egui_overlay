@@ -87,6 +87,8 @@ pub struct GlfwConfig {
     /// It will be opengl window on windows/linux, and non-opengl on linux.
     /// If you want to use this with wgpu/vulkan etc.. or create your own gl context using egl, set this to false
     pub opengl_window: Option<bool>,
+    /// whether the window should have decorations (title bar, borders)
+    pub decorated: Option<bool>,
     /// This callback is called with `&mut Glfw` just before creating a window
     /// All advanced configuration can be done here. eg: opengl settings such as gl version, depth/stencil bits etc..
     pub glfw_callback: GlfwCallback,
@@ -98,10 +100,13 @@ impl Default for GlfwConfig {
     fn default() -> Self {
         Self {
             glfw_callback: Box::new(|_| {}),
-            window_callback: Box::new(|_| {}),
+            window_callback: Box::new(|window| {
+                window.maximize();
+            }),
             window_title: "glfw window".to_string(),
             transparent_window: None,
             opengl_window: None,
+            decorated: Some(false), // No title bar by default
             size: [800, 600],
         }
     }
@@ -117,6 +122,7 @@ impl GlfwBackend {
             size,
             transparent_window,
             opengl_window,
+            decorated,
             glfw_callback,
             window_callback,
         } = config;
@@ -130,6 +136,9 @@ impl GlfwBackend {
             } else {
                 glfw_context.window_hint(WindowHint::ClientApi(ClientApiHint::NoApi));
             }
+        }
+        if let Some(decorated) = decorated {
+            glfw_context.window_hint(WindowHint::Decorated(decorated));
         }
         (glfw_callback)(&mut glfw_context);
 

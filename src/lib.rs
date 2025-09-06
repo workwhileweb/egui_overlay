@@ -23,6 +23,10 @@ pub fn start<T: EguiOverlay + 'static>(user_data: T) {
             // scale the window size based on monitor scale. as 800x600 looks too small on a 4k screen, compared to a hd screen in absolute pixel sizes.
             gtx.window_hint(egui_window_glfw_passthrough::glfw::WindowHint::ScaleToMonitor(true));
         }),
+        // this closure will be called after creating a window
+        window_callback: Box::new(|window| {
+            window.maximize();
+        }),
         #[cfg(feature = "three_d")]
         opengl_window: Some(true), // opengl for non-macos, for faster compilation and less wgpu bloat. also, drivers are better with gl transparency than vk
         #[cfg(feature = "wgpu")]
@@ -32,8 +36,6 @@ pub fn start<T: EguiOverlay + 'static>(user_data: T) {
     });
     // always on top
     glfw_backend.window.set_floating(true);
-    // disable borders/titlebar
-    glfw_backend.window.set_decorated(false);
 
     let latest_size = glfw_backend.window.get_framebuffer_size();
     let latest_size = [latest_size.0 as _, latest_size.1 as _];
